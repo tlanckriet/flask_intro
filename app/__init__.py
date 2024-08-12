@@ -1,11 +1,17 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from config import Config
+from .models import db
+from .config import Config
 
-app = Flask(__name__)
-app.config.from_object(Config)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
-from . import routes
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()  # Create sql tables for our data models
+
+    from .routes import main
+    app.register_blueprint(main)
+
+    return app
